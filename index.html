@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' ws: wss: https:; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light dark">
+<title>Secure Temp Chat</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231f6f5c'/%3E%3Cpath d='M16 6a5 5 0 0 0-5 5v3h-1.5v10h13V14H21v-3a5 5 0 0 0-5-5zm-3 5a3 3 0 1 1 6 0v3h-6z' fill='white'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1>Secure Temp Chat</h1>
+    <p class="tag">Pick a chat network, choose your encryption, see exactly how protected you are. Nothing is stored: keys and messages live in this tab's memory only.</p>
+  </div>
+</header>
+
+<main class="wrap layout">
+  <section class="col" aria-label="Setup">
+
+    <article class="card" id="card-net">
+      <h2><span class="n">1</span> Choose a chat network</h2>
+      <label for="proto">Network type</label>
+      <select id="proto">
+        <option value="loopback">Demo: two tabs of this page (no server needed)</option>
+        <option value="irc">IRC (any server with WebSocket, or any server via the bridge)</option>
+        <option value="xmpp">XMPP / Jabber (WebSocket, or via the bridge)</option>
+        <option value="silc">SILC (via your own gateway - see note)</option>
+        <option value="groupwise">GroupWise (via your own gateway - see note)</option>
+      </select>
+      <p class="note" id="proto-note"></p>
+
+      <div id="f-server">
+        <label for="url" id="url-label">Server address</label>
+        <div class="row">
+          <input id="url" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="wss://irc.example.org/ws">
+          <button type="button" id="discover" class="ghost" hidden>Find it</button>
+        </div>
+        <p class="tlsflag" id="tlsflag" role="status"></p>
+      </div>
+
+      <div id="f-bridge-target" hidden>
+        <div class="grid2">
+          <div><label for="bhost">Server host</label><input id="bhost" type="text" autocomplete="off" spellcheck="false" placeholder="irc.example.org or abc...xyz.onion"></div>
+          <div><label for="bport">Port</label><input id="bport" type="number" min="1" max="65535" value="6697"></div>
+        </div>
+        <label class="chk"><input id="btls" type="checkbox" checked> Use TLS to the server (strongly recommended)</label>
+        <label class="chk"><input id="binsecure" type="checkbox"> Accept self-signed / unverified certificate (needed for most .onion / .i2p servers; the score drops)</label>
+        <div id="bpath-wrap" hidden><label for="bpath">WebSocket path on the server</label><input id="bpath" type="text" value="/xmpp-websocket" autocomplete="off"></div>
+      </div>
+
+      <div class="grid2">
+        <div><label for="nick" id="nick-label">Nickname</label><input id="nick" type="text" autocomplete="off" spellcheck="false"></div>
+        <div><label for="pass">Account password <span class="opt">(optional)</span></label><input id="pass" type="password" autocomplete="off"></div>
+      </div>
+      <p class="note small">A password logs you in to the server with SASL (IRC) or SASL SCRAM/PLAIN (XMPP). It identifies you to the server; it is never sent to your chat partner. Leave blank to stay anonymous (XMPP needs a server that allows ANONYMOUS).</p>
+
+      <details class="adv"><summary>Advanced</summary>
+        <label for="subproto">IRC WebSocket sub-protocol</label>
+        <select id="subproto"><option>text.ircv3.net</option><option>binary.ircv3.net</option><option value="none">(none - for gateways that reject sub-protocols)</option></select>
+        <label for="spass">IRC server password (PASS) <span class="opt">(optional)</span></label>
+        <input id="spass" type="password" autocomplete="off">
+        <label class="chk"><input id="clientcert" type="checkbox"> I use a TLS client certificate (CertFP / SASL EXTERNAL) installed in my browser</label>
+        <p class="note small">Web pages cannot choose or inspect client certificates - the browser does that itself. This tick-box is only your own note and is <strong>not</strong> counted in the scores.</p>
+      </details>
+
+      <details class="tips" open><summary>How to pick a safe server</summary>
+        <ol>
+          <li><strong>Insist on TLS.</strong> Use <code>wss://</code> (WebSocket over TLS) addresses, or TLS ports (IRC 6697) through the bridge. Never plain <code>ws://</code>, port 6667, or XMPP without TLS. Browsers refuse <code>ws://</code> from this https page anyway.</li>
+          <li><strong>Check the certificate is valid</strong> (padlock). XMPP admins can test servers at <a href="https://compliance.conversations.im/" target="_blank" rel="noopener noreferrer">compliance.conversations.im</a>.</li>
+          <li><strong>The server can still see who talks to whom.</strong> TLS only protects the road to the server. Only <em>end-to-end</em> encryption (step 2) hides message text from the server's operator - so always turn it on.</li>
+          <li><strong>Prefer servers with a clear no-logging policy,</strong> host/IP cloaking (IRC) and SASL accounts.</li>
+          <li><strong>Want to hide your IP?</strong> Use the bridge with Tor or I2P (step 3).</li>
+        </ol>
+      </details>
+    </article>
+
+    <article class="card" id="card-enc">
+      <h2><span class="n">2</span> Choose your encryption</h2>
+      <label for="e2e">End-to-end protocol</label>
+      <select id="e2e">
+        <option value="ratchet">Double Ratchet - Signal-style (best: forward secrecy + self-healing)</option>
+        <option value="ecdh">Session key exchange (ephemeral ECDH)</option>
+        <option value="static">Static long-term keys (no forward secrecy)</option>
+        <option value="psk">Shared passphrase (no forward secrecy; works in channels)</option>
+        <option value="otp">One-time pad (pad shared in advance)</option>
+        <option value="none">None - transport encryption only (not recommended)</option>
+      </select>
+      <p class="note" id="e2e-note"></p>
+
+      <div id="f-curve">
+        <label for="curve">Key-exchange curve</label>
+        <select id="curve"><option>P-256</option><option>P-384</option><option>X25519</option></select>
+      </div>
+      <div id="f-auth">
+        <label for="auth">Authentication (proves who you're talking to)</label>
+        <select id="auth">
+          <option value="none">None - compare the 8-digit code by voice</option>
+          <option value="sign">Signed handshake (identity key, fingerprint to verify)</option>
+          <option value="psk">Shared secret mixed into key exchange</option>
+        </select>
+        <p class="note" id="auth-note"></p>
+      </div>
+      <div id="f-pass" hidden>
+        <label for="passphrase">Shared passphrase <span class="opt">(both people type the same one - agree on it in person or by a secure channel)</span></label>
+        <input id="passphrase" type="password" autocomplete="off">
+        <div class="meter" aria-hidden="true"><i id="passmeter"></i></div>
+      </div>
+      <div id="f-otp" hidden>
+        <fieldset>
+          <legend>Your side of the pad</legend>
+          <label class="chk"><input type="radio" name="otpside" value="A" checked> Side A</label>
+          <label class="chk"><input type="radio" name="otpside" value="B"> Side B <span class="opt">(your peer must pick the other side)</span></label>
+        </fieldset>
+        <div class="row wrap-s">
+          <select id="padsize" aria-label="Pad size"><option value="65536">64 KB</option><option value="262144" selected>256 KB</option><option value="1048576">1 MB</option></select>
+          <button type="button" id="padgen">Generate new pad</button>
+          <label class="filebtn ghost">Load file<input type="file" id="padfile" hidden></label>
+        </div>
+        <label for="padtext">Pad (base64) - share it with your peer in person, then paste it on both sides</label>
+        <textarea id="padtext" rows="4" spellcheck="false" autocomplete="off"></textarea>
+        <p class="note small" id="padstatus"></p>
+      </div>
+      <label for="vanish">Disappearing messages</label>
+      <select id="vanish"><option value="0">Off</option><option value="1">After 1 minute</option><option value="5">After 5 minutes</option><option value="30">After 30 minutes</option></select>
+    </article>
+
+    <article class="card" id="card-route">
+      <h2><span class="n">3</span> Route (optional): Tor / I2P / direct TCP</h2>
+      <fieldset>
+        <legend>How should your connection leave this browser?</legend>
+        <label class="chk"><input type="radio" name="route" value="direct" checked> Directly from my browser (WebSocket)</label>
+        <label class="chk"><input type="radio" name="route" value="bridge"> Through my local bridge (needed for Tor, I2P, plain IRC ports, and to see the real TLS cipher)</label>
+      </fieldset>
+      <div id="f-anon">
+        <label for="anon">Anonymity network</label>
+        <select id="anon">
+          <option value="none">None</option>
+          <option value="tor">Tor (bridge connects through your Tor SOCKS port)</option>
+          <option value="i2p">I2P (bridge connects through your I2P SOCKS port)</option>
+          <option value="torbrowser">I'm running this page in Tor Browser (cannot be verified)</option>
+        </select>
+        <p class="note" id="anon-note"></p>
+      </div>
+      <div id="f-bridgeurl" hidden>
+        <label for="bridgeurl">Bridge address</label>
+        <input id="bridgeurl" type="text" value="ws://127.0.0.1:8765" autocomplete="off" spellcheck="false">
+        <details class="adv"><summary>Install &amp; start the bridge (one paste)</summary>
+          <ol>
+            <li>You need <a href="https://nodejs.org/" target="_blank" rel="noopener noreferrer">Node.js 18+</a> and, for anonymity, Tor (SOCKS <code>127.0.0.1:9050</code>) or I2P (SOCKS <code>127.0.0.1:4447</code>) running.</li>
+            <li>Press <strong>Build the command</strong>, then <strong>Copy</strong>.</li>
+            <li>Right-click in your terminal (PuTTY: right-click pastes) and press Enter. It writes the file, then starts the bridge. Leave it running.</li>
+          </ol>
+          <div class="row"><button type="button" id="mkcmd">Build the command</button><button type="button" id="cpcmd" class="ghost" disabled>Copy</button></div>
+          <textarea id="cmdbox" rows="6" readonly spellcheck="false" aria-label="Bridge install command"></textarea>
+        </details>
+      </div>
+    </article>
+  </section>
+
+  <aside class="col sticky" aria-label="Encryption report">
+    <article class="card" id="report" aria-live="polite">
+      <h2>Your encryption report</h2>
+      <div class="scores">
+        <div class="score" id="sc-enc"><div class="big">-</div><div class="lbl">Encryption score</div><div class="bar"><i></i></div></div>
+        <div class="score" id="sc-priv"><div class="big">-</div><div class="lbl">Privacy score</div><div class="bar"><i></i></div></div>
+      </div>
+      <div class="pfs" id="pfs"></div>
+      <p class="note" id="deni"></p>
+      <h3>Layers (outermost first)</h3>
+      <div id="layers" class="layers"></div>
+      <p class="narr" id="narr"></p>
+      <h3>Warnings &amp; advice</h3>
+      <ul id="warns" class="warns"></ul>
+      <details><summary>How the scores are calculated</summary>
+        <div id="breakdown"></div>
+        <p class="note small">Scores are a teaching aid, not an audit. They describe the choices you made and what this app can see; they cannot see your device, your peer's device, or a server that lies.</p>
+      </details>
+    </article>
+  </aside>
+</main>
+
+<section class="wrap" id="chat" aria-label="Chat">
+  <article class="card">
+    <h2><span class="n">4</span> Connect &amp; chat</h2>
+    <div class="row wrap-s">
+      <button type="button" id="connect" class="primary">Connect</button>
+      <button type="button" id="burn" class="danger" disabled>Burn session (wipe keys &amp; messages)</button>
+      <span id="status" class="status" role="status">Not connected</span>
+    </div>
+    <div class="row wrap-s peerrow">
+      <div class="grow"><label for="peer">Chat with <span class="opt" id="peer-hint">(their nickname)</span></label><input id="peer" type="text" autocomplete="off" spellcheck="false"></div>
+      <button type="button" id="start" disabled>Start secure session</button>
+    </div>
+
+    <div class="secbox" id="secbox" hidden>
+      <div><strong>Session:</strong> <span id="secstate"></span></div>
+      <div id="sasrow" hidden>Verification code - read it to your peer by voice or another trusted channel: <code class="sas" id="sas"></code></div>
+      <div id="fprow" hidden><span id="fpkind">Peer key</span> fingerprint: <code id="peerfp"></code></div>
+      <div id="myfprow" hidden>Your identity fingerprint: <code id="myfp"></code></div>
+      <label class="chk" id="verrow" hidden><input type="checkbox" id="verified"> Mark as verified (we compared it and it matches)</label>
+    </div>
+
+    <ul id="log" class="log" role="log" aria-live="polite" aria-label="Messages"></ul>
+    <form id="composer" class="row" autocomplete="off">
+      <input id="msg" type="text" placeholder="Type a message" aria-label="Message" disabled>
+      <button id="send" disabled>Send</button>
+    </form>
+  </article>
+</section>
+
+<footer class="wrap foot">
+  <p>Open source. The encryption is implemented with your browser's built-in Web Crypto (AES-256-GCM, ECDH, ECDSA, HKDF, PBKDF2). It is Signal-<em>style</em> and OTR-<em>like</em> but is <strong>not</strong> compatible with Signal, OTR or OMEMO clients - both people must use this page. It has not had an independent security audit; for life-or-death needs use audited tools.</p>
+</footer>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

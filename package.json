@@ -1,0 +1,12 @@
+{
+  "name": "secure-temp-pidgen-chat",
+  "version": "1.0.0",
+  "description": "Secure temporary chat for IRC / XMPP (and SILC / GroupWise via a gateway) with layered encryption scoring",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test --test-force-exit tests/*.test.mjs",
+    "serve": "npx http-server -p 8080 -c-1 ."
+  },
+  "license": "MIT"
+}
