@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' ws: wss: https:; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04060a">
 <title>Secure Temp Chat</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231f6f5c'/%3E%3Cpath d='M16 6a5 5 0 0 0-5 5v3h-1.5v10h13V14H21v-3a5 5 0 0 0-5-5zm-3 5a3 3 0 1 1 6 0v3h-6z' fill='white'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="css/style.css">
@@ -13,8 +14,9 @@
 <body>
 <header class="top">
   <div class="wrap">
-    <h1>Secure Temp Chat</h1>
-    <p class="tag">Pick a chat network, choose your encryption, see exactly how protected you are. Nothing is stored: keys and messages live in this tab's memory only.</p>
+    <p class="sys">SYS://NODE <b>ONLINE</b> &nbsp;|&nbsp; MEMORY-ONLY &nbsp;|&nbsp; ZERO LOGS</p>
+    <h1>Secure <span>Temp</span> Chat</h1>
+    <p class="tag">Pick a network. Pick your encryption. See exactly how deep the layers go. Nothing is stored: keys and messages live in this tab's memory only</p>
   </div>
 </header>
 
@@ -209,6 +211,19 @@
       <input id="msg" type="text" placeholder="Type a message" aria-label="Message" disabled>
       <button id="send" disabled>Send</button>
     </form>
+  </article>
+</section>
+
+<section class="wrap" id="donate" aria-label="Support the project">
+  <article class="card donate">
+    <h2>Support the grid</h2>
+    <p>Secure Temp Chat is free and open source. If it's useful to you, donations in <strong>Monero (XMR)</strong> are appreciated:</p>
+    <code id="xmrAddr" class="xmr">85cSWLFurZj8XbKWX7Kk3u1oUtp5vLGQcLSfXEdGnTUU5P9mik6GCPk8guPfAwzHdFFUCbDKChZEphQyp6BNMQwo5oyPLUD</code>
+    <div class="row">
+      <a class="btn" href="monero:85cSWLFurZj8XbKWX7Kk3u1oUtp5vLGQcLSfXEdGnTUU5P9mik6GCPk8guPfAwzHdFFUCbDKChZEphQyp6BNMQwo5oyPLUD">Donate in wallet</a>
+      <button type="button" id="donateCopy">Copy address</button>
+    </div>
+    <p id="donateMsg" class="note small" aria-live="polite"></p>
   </article>
 </section>
 

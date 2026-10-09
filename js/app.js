@@ -363,6 +363,10 @@ $('cpcmd').addEventListener('click', copyCmd);
 $('padgen').addEventListener('click', () => { const p = generatePad(+$('padsize').value); $('padtext').value = padToText(p); setPad(p); });
 $('padtext').addEventListener('input', () => { try { const t = $('padtext').value.trim(); setPad(t ? padFromText(t) : null); } catch { setPad(null); $('padstatus').textContent = 'That is not valid base64.'; } });
 $('padfile').addEventListener('change', async () => { const f = $('padfile').files[0]; if (!f) return; const p = new Uint8Array(await f.arrayBuffer()); $('padtext').value = padToText(p); setPad(p); });
+$('donateCopy').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText($('xmrAddr').textContent.trim()); $('donateMsg').textContent = 'Address copied. Thank you!'; }
+  catch { const r = document.createRange(); r.selectNodeContents($('xmrAddr')); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); $('donateMsg').textContent = 'Address selected - press Ctrl+C to copy.'; }
+});
 $('nick').value = 'guest' + Math.random().toString(36).slice(2, 6);
 document.addEventListener('visibilitychange', () => { /* nothing is persisted; intentionally no storage */ });
 renderForm();
