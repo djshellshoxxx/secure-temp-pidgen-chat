@@ -1,6 +1,6 @@
 **Secure Temp Chat**
 
-- [Home](Home)
-- [Developer Guide](Developer-Guide)
-- [Architecture Summary](Architecture-Summary)
-- [Codebase Map](Codebase-Map)
+- [Home](Home.md)
+- [Developer Guide](Developer-Guide.md)
+- [Architecture Summary](Architecture-Summary.md)
+- [Codebase Map](Codebase-Map.md)
