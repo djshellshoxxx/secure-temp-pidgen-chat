@@ -72,3 +72,7 @@ SOCKS ports you configured. Do not expose it to a network. Chrome and Firefox al
 npm test                 # 38 tests: crypto, scoring, SCRAM vector, IRC/XMPP mocks, bridge incl. TLS + SOCKS
 npx http-server -p 8080 .
 ```
+
+## Wiki
+
+Wiki source pages are in [docs/wiki/](docs/wiki/Home.md): developer guide, architecture summary (limits and layers) and codebase map. This README remains the authority for what is and is not possible.
